@@ -1,0 +1,55 @@
+body {
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+a {
+  color: #00B7FF;
+}
+.title {
+  text-align: center;
+  width:100%;
+  margin: 15px 0;
+}
+
+.player_list {
+  margin: 10px 0;
+  text-align: center;
+}
+
+.player_name {
+  padding: 10px;
+  font-size: 1.3em;
+}
+
+#name_input {
+  display: inline;
+  width: 60%;
+}
+
+#name_submit {
+  display: inline;
+  margin: -5px 0 0 10px;
+  width: 35%;
+}
+
+#yomifuda_area {
+  margin: 10px 0;
+  font-family: "ヒラギノ明朝 ProN W6", "HiraMinProN-W6", "HG明朝E", "ＭＳ Ｐ明朝", "MS PMincho", "MS 明朝", serif;
+  line-height: 1.2em;
+  font-size: 1.3em;
+}
+
+.fuda {
+  background-color: #f7f2ec;
+  width: 22%;
+  border: solid 2px #3b6303;
+  -webkit-writing-mode: vertical-rl;
+  -ms-writing-mode: tb-rl;
+  writing-mode: vertical-rl;
+  padding: 8px 4px;
+  margin: 4px;
+  font-family: "ヒラギノ明朝 ProN W6", "HiraMinProN-W6", "HG明朝E", "ＭＳ Ｐ明朝", "MS PMincho", "MS 明朝", serif;
+  line-height: 1.2em;
+  font-size: 1.3em;
+  letter-spacing: 2px;
+}
