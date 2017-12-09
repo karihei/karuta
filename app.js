@@ -46,49 +46,66 @@ app.use(function(err, req, res, next) {
 });
 
 
-var playerNames = [];
+var players = [];
 var ENTRY_TIME_LIMIT = 180;
 var entryTimeout = null;
 var lastEntryTime = 0;
 var MAX_DECK_SIZE = 12; // 場に出る札の数
+var idCount = 0;
+var yomiEndPlayersId = [];
 
 io.on('connection', function(socket) {
     console.log('a user connected');
     var currentTime = Math.floor(new Date().getTime() / 1000);
-    emitNameEntry(playerNames, Math.max(ENTRY_TIME_LIMIT - (currentTime - lastEntryTime), 1));
+    emitNameEntry(players, Math.max(ENTRY_TIME_LIMIT - (currentTime - lastEntryTime), 0));
 
     // エントリー受付
+    var entryIds = [];
     socket.on('name entry', function(name) {
-        if (playerNames.length <= 2) {
-            playerNames.push(name);
-            emitNameEntry(playerNames, ENTRY_TIME_LIMIT);
+        if (players.length <= 2) {
+            players.push({id: idCount++, name: name});
+            emitNameEntry(players, ENTRY_TIME_LIMIT);
             lastEntryTime = Math.floor(new Date().getTime() / 1000);
 
             entryTimeout && clearTimeout(entryTimeout);
             entryTimeout = setTimeout(function() {
                 // 時間内に二人集まらなかったら解散
-                if (playerNames.length < 2) {
-                    playerNames = [];
-                    emitNameEntry(playerNames, 0);
+                if (players.length < 2) {
+                    players = [];
+                    emitNameEntry(players, 0);
                 }
             }, ENTRY_TIME_LIMIT * 1000);
+
+            if (players.length === 2) { // マッチング成立
+                gameStart();
+            }
         }
     });
 
-    // 対戦準備OK
-    socket.on('ready fight', function() {
-        gameStart();
-    });
-
     socket.on('user exit', function() {
-        playerNames = [];
-        emitNameEntry(playerNames, 0);
+        reset();
+        emitNameEntry(players, 0);
     });
 
     // 誰かが取った時
     socket.on('harai', function(resp) {
         if (atariId == resp.atari) {
             io.emit('harai atari', resp);
+        } else {
+            debug('hoge');
+            io.emit('harai otetsuki', resp);
+        }
+    });
+
+    // 歌が読み終わった時
+    socket.on('yomi end', function(userId) {
+        if (yomiEndPlayersId.indexOf(userId) < 0) {
+            yomiEndPlayersId.push(userId);
+        }
+
+        if (yomiEndPlayersId.length === players.length) {
+            yomiEndPlayersId = [];
+            roundStart();
         }
     });
 });
@@ -117,16 +134,25 @@ function gameStart() {
 }
 
 var atariId = -1;
-
+var atariFudas = []; // あたり札の履歴
 function roundStart() {
-    if (atariId < 0) {
+    do {
         atariId = deck[Math.floor(Math.random() * (deck.length - 1))];
-    }
+    } while(atariFudas.indexOf(atariId) >= 0 && atariFudas.length !== deck.length) ;
+    atariFudas.push(atariId);
+
     io.emit('round start', {atari: atariId});
 }
 
 function emitNameEntry(players, remain) {
-    io.emit('name entry', {players: playerNames, remain: remain});
+    io.emit('name entry', {players: players, remain: remain});
+}
+gameStart()
+function reset() {
+    players = [];
+    lastEntryTime = 0;
+    atariFudas = [];
+    entryTimeout && clearTimeout(entryTimeout);
 }
 
 setUpGame();
