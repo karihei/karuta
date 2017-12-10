@@ -7,6 +7,9 @@ a {
 }
 
 #msg_info {
+  position: absolute;
+  right: 5px;
+  top: 10px;
   opacity: 0;
   display: inline-block;
   width: auto;
@@ -47,6 +50,10 @@ a {
   color: #00f;
 }
 
+.img_vs {
+  width: 9%;
+}
+
 #name_input {
   display: inline;
   width: 60%;
@@ -63,12 +70,18 @@ a {
 }
 
 #yomifuda_area {
-  margin: 10px 0;
+  margin: 20px;
   padding: 30px;
   font-family: "ヒラギノ明朝 ProN W6", "HiraMinProN-W6", "HG明朝E", "ＭＳ Ｐ明朝", "MS PMincho", "MS 明朝", serif;
   line-height: 1.5em;
   font-size: 310%;
   height: 205px;
+}
+
+.yomi_outer {
+  opacity: 0;
+  background: url(../images/yomi_bg.png) center center no-repeat;
+  background-size: 100% 100%;
 }
 
 #fuda_area {
@@ -88,4 +101,12 @@ a {
   line-height: 1.1em;
   font-size: 3.9em;
   letter-spacing: 2px;
+}
+
+.hand {
+  position: absolute;
+  top: -10px;
+  left: -50px;
+  width: 290%;
+  opacity: 0;
 }

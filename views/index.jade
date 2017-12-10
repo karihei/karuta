@@ -4,17 +4,18 @@ block content
   img(src="images/logo.png").title
   span#msg_info="対戦を始めます"
   div#container_login.input_group.input_group_lg
-    input#name_input(placeholder="なまえをいれてね", maxlength=10).form-control
+    input#name_input(placeholder="なまえをいれてね", maxlength=5).form-control
     input#name_submit(type="submit" value="決定").btn.btn-default
 
   div#container_ready_to_fight(style="display:none;")
     span#entry_remain(style="display:none")="待機時間：0"
     div.player_list
       span#player_a_name.player_name= "<募集中>"
-      span= "VS"
+      img(src="images/vs.png").img_vs
       span#player_b_name.player_name= "<募集中>"
   div#container_game_board
-    div#yomifuda_area
-      div#kaminoku
-      div#shimonoku
+    div.yomi_outer
+      div#yomifuda_area
+        div#kaminoku
+        div#shimonoku
     div#fuda_area

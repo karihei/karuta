@@ -52,7 +52,16 @@ var entryTimeout = null;
 var lastEntryTime = 0;
 var MAX_DECK_SIZE = 12; // 場に出る札の数
 var idCount = 0;
-var yomiEndPlayersId = [];
+
+// ラウンドごとに初期化が必要
+var atariId = -1; // そのラウンドのあたり札
+var yomiEndPlayersId = []; // クライアント側で歌読みが終わったプレイヤー一覧
+var roundWinnerId = -1; // そのラウンドの勝者ID
+
+// ゲームごとに初期化が必要
+var atariFudas = []; // あたり札の履歴
+var cardList = []; // 100首の札リスト
+var deck = []; // 場の札リスト
 
 io.on('connection', function(socket) {
     console.log('a user connected');
@@ -89,10 +98,16 @@ io.on('connection', function(socket) {
 
     // 誰かが取った時
     socket.on('harai', function(resp) {
-        if (atariId == resp.atari) {
+        debug(resp);
+        // 既にラウンド勝者が決まっている場合は何もしない
+        if (roundWinnerId >= 0) {
+            return;
+        }
+
+        if (atariId === resp.atari) {
+            roundWinnerId = resp.userId;
             io.emit('harai atari', resp);
         } else {
-            debug('hoge');
             io.emit('harai otetsuki', resp);
         }
     });
@@ -110,10 +125,10 @@ io.on('connection', function(socket) {
     });
 });
 
-var cardList = [];
-var deck = [];
 
 function setUpGame() {
+    gameReset();
+
     // ゲームで使う札一覧をランダム生成する
     for(var i = 0;i < 100;i++) {
         cardList.push(i);
@@ -125,6 +140,7 @@ function setUpGame() {
 }
 
 function gameStart() {
+    setUpGame();
     io.emit('game start', {deck: deck});
 
     // test
@@ -133,9 +149,8 @@ function gameStart() {
     }, 500);
 }
 
-var atariId = -1;
-var atariFudas = []; // あたり札の履歴
 function roundStart() {
+    roundReset();
     do {
         atariId = deck[Math.floor(Math.random() * (deck.length - 1))];
     } while(atariFudas.indexOf(atariId) >= 0 && atariFudas.length !== deck.length) ;
@@ -147,7 +162,17 @@ function roundStart() {
 function emitNameEntry(players, remain) {
     io.emit('name entry', {players: players, remain: remain});
 }
-gameStart()
+
+function roundReset() {
+    roundWinnerId = -1;
+    yomiEndPlayersId = [];
+}
+
+function gameReset() {
+    cardList = [];
+    deck = [];
+}
+
 function reset() {
     players = [];
     lastEntryTime = 0;

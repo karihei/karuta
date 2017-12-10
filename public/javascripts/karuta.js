@@ -51,18 +51,27 @@ function initSocket() {
     socket.on('round start', function(resp) {
         currentAtariId = resp.atari;
         isOtetsuki = false;
+        $('.hand').remove();
+        $('.yomi_outer').css('opacity', 0).animate({'opacity': 1}, 300);
+        hideInfoMessage();
         showYomifuda(currentAtariId);
     });
 
     // 誰かがあたり札を払った時
     socket.on('harai atari', function(resp) {
         var atariEl = $('.fuda#' + resp.atari);
+        atariEl.trigger('startRumble');
+        setTimeout(function() {
+            atariEl.trigger('stopRumble');
+        }, 200);
+        showHandEffect(atariEl);
+        showInfoMessage(findUserNameById(resp.userId) + 'さんが取りました', true);
         if(players[0].id === resp.userId) {
             addPoint(0, 1);
-            atariEl.css({'backgroundColor': '#f00'})
+            atariEl.css({'backgroundColor': '#f50b0b7d'})
         } else {
             addPoint(1, 1);
-            atariEl.css({'backgroundColor': '#00f'})
+            atariEl.css({'backgroundColor': '#0000ff82'})
         }
     });
 
@@ -105,6 +114,11 @@ function initFuda(deck) {
         var width = el.width();
         el.css({left: i * width});
         el.height(width * 1.618);
+        el.jrumble({
+            x: 10,
+            y: 10,
+            rotation: 4
+        });
 
         if ((i+1) % (deck.length / ROW_SIZE) === 0) {
             rowIndex++;
@@ -130,9 +144,19 @@ function onNameSubmit(e) {
 }
 
 function onFudaTap(e) {
-    var toriId = $(e.target).attr('id');
-    var responceTime = new Date().getTime() - yomiTime;
-    socket.emit('harai', {atari: toriId, responceTime: responceTime, userId: currentPlayer.id});
+    if (isOtetsuki) {
+        showInfoMessage('お手つき中です。', true);
+    } else {
+        var toriId = $(e.target).attr('id');
+        var responceTime = new Date().getTime() - yomiTime;
+        socket.emit('harai', {atari: parseInt(toriId), responceTime: responceTime, userId: currentPlayer.id});
+    }
+}
+
+function showHandEffect(el) {
+    var handImg = $('<img>').addClass('hand').attr('src', '/images/hand.png');
+    el.append(handImg);
+    handImg.animate({'width': '190%', 'opacity': 1}, 300);
 }
 
 function showYomifuda(index) {
@@ -166,7 +190,10 @@ function showYomifuda(index) {
 
         if (totalCount > kaminoku.length + shimonoku.length) {
             clearTimeout(timer);
-            socket.emit('yomi end', currentPlayer.id);
+            $('.yomi_outer').animate({'opacity': 0}, 4000);
+            setTimeout(function() {
+                socket.emit('yomi end', currentPlayer.id);
+            }, 5000);
         } else {
             totalCount++;
         }
@@ -201,7 +228,7 @@ function hideInfoMessage() {
 function addPoint(index, point) {
     points[index] += point;
     var nameEl;
-    if (index == 0) {
+    if (index === 0) {
         nameEl = $('#player_a_name');
     } else {
         nameEl = $('#player_b_name');
