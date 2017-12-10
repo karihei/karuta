@@ -29,11 +29,10 @@ a {
 .title {
   text-align: center;
   width: 100%;
-  margin: 15px 0;
+  margin-top: 15px;
 }
 
 .player_list {
-  margin: 10px 0;
   text-align: center;
 }
 
@@ -96,7 +95,7 @@ a {
   -ms-writing-mode: tb-rl;
   writing-mode: vertical-rl;
   padding: 8px 4px;
-  margin: 10px;
+  margin: 2px 10px;
   font-family: "ヒラギノ明朝 ProN W6", "HiraMinProN-W6", "HG明朝E", "ＭＳ Ｐ明朝", "MS PMincho", "MS 明朝", serif;
   line-height: 1.1em;
   font-size: 3.9em;
