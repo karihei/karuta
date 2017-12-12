@@ -90,17 +90,17 @@ a {
 
 .fuda {
   background-color: #f7f2ec;
-  width: 18%;
+  width: 20%;
   border: solid 9px #3b6303;
   -webkit-writing-mode: vertical-rl;
   -ms-writing-mode: tb-rl;
   writing-mode: vertical-rl;
-  padding: 8px 14px;
-  margin: 4px 20px;
+  padding: 6px 14px;
+  margin: 8px 20px;
   font-family: "ヒラギノ明朝 ProN W6", "HiraMinProN-W6", "HG明朝E", "ＭＳ Ｐ明朝", "MS PMincho", "MS 明朝", serif;
-  line-height: 1.3em;
-  font-size: 2.4em;
-  letter-spacing: 1px;
+  line-height: 1.1em;
+  font-size: 3.2em;
+  letter-spacing: 0;
 }
 
 .hand {
