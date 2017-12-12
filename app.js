@@ -7,6 +7,7 @@ var bodyParser = require('body-parser');
 var http = require('http');
 var server = http.createServer(app);
 var io = require('socket.io').listen(server);
+var __ = require('underscore');
 
 var debug = require('debug')('karuta:server');
 var index = require('./routes/index');
@@ -45,13 +46,16 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-
-var players = [];
 var ENTRY_TIME_LIMIT = 180;
-var entryTimeout = null;
-var lastEntryTime = 0;
 var MAX_DECK_SIZE = 12; // 場に出る札の数
 var idCount = 0;
+var ANKI_TIME = 500; // 暗記時間
+
+// セッションごとに初期化が必要
+var players = [];
+var entryTimeout = null;
+var lastEntryTime = 0; // 最新のエントリー時間
+var mode = 'title'; // title->タイトル, entry->エントリー待機中, game->ゲーム中
 
 // ラウンドごとに初期化が必要
 var atariId = -1; // そのラウンドのあたり札
@@ -66,12 +70,15 @@ var deck = []; // 場の札リスト
 io.on('connection', function(socket) {
     console.log('a user connected');
     var currentTime = Math.floor(new Date().getTime() / 1000);
-    emitNameEntry(players, Math.max(ENTRY_TIME_LIMIT - (currentTime - lastEntryTime), 0));
+
+    if (players.length > 0) {
+        emitNameEntry(players, Math.max(ENTRY_TIME_LIMIT - (currentTime - lastEntryTime), 0));
+    }
 
     // エントリー受付
-    var entryIds = [];
     socket.on('name entry', function(name) {
         if (players.length <= 2) {
+            entryMode();
             players.push({id: idCount++, name: name});
             emitNameEntry(players, ENTRY_TIME_LIMIT);
             lastEntryTime = Math.floor(new Date().getTime() / 1000);
@@ -82,6 +89,7 @@ io.on('connection', function(socket) {
                 if (players.length < 2) {
                     players = [];
                     emitNameEntry(players, 0);
+                    titleMode();
                 }
             }, ENTRY_TIME_LIMIT * 1000);
 
@@ -91,9 +99,17 @@ io.on('connection', function(socket) {
         }
     });
 
-    socket.on('user exit', function() {
-        reset();
-        emitNameEntry(players, 0);
+    socket.on('user exit', function(userId) {
+        if (mode === 'entry') {
+            removePlayer(userId);
+            emitNameEntry(players, ENTRY_TIME_LIMIT);
+            if (players.length === 0) {
+                titleMode();
+            }
+        } else if (mode === 'game') {
+            io.emit('game exit');
+            titleMode();
+        }
     });
 
     // 誰かが取った時
@@ -125,6 +141,24 @@ io.on('connection', function(socket) {
     });
 });
 
+function removePlayer(userId) {
+    players = __.filter(players, function(player) {
+        return player.id !== userId;
+    });
+}
+
+function titleMode() {
+    mode = 'title';
+    reset();
+}
+
+function entryMode() {
+    mode = 'entry';
+}
+
+function gameMode() {
+    mode = 'game';
+}
 
 function setUpGame() {
     gameReset();
@@ -142,11 +176,12 @@ function setUpGame() {
 function gameStart() {
     setUpGame();
     io.emit('game start', {deck: deck});
+    gameMode();
 
     // test
     setTimeout(function() {
         roundStart();
-    }, 500);
+    }, ANKI_TIME);
 }
 
 function roundStart() {
@@ -174,6 +209,9 @@ function gameReset() {
 }
 
 function reset() {
+    roundReset();
+    gameReset();
+
     players = [];
     lastEntryTime = 0;
     atariFudas = [];
