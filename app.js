@@ -49,7 +49,6 @@ app.use(function(err, req, res, next) {
 var ENTRY_TIME_LIMIT = 180;
 var MAX_DECK_SIZE = 12; // 場に出る札の数
 var idCount = 0;
-var ANKI_TIME = 500; // 暗記時間
 
 // セッションごとに初期化が必要
 var players = [];
@@ -66,6 +65,7 @@ var roundWinnerId = -1; // そのラウンドの勝者ID
 var atariFudas = []; // あたり札の履歴
 var cardList = []; // 100首の札リスト
 var deck = []; // 場の札リスト
+var readyToFightUsersId = []; // ゲームの準備が整ったプレイヤー一覧
 
 io.on('connection', function(socket) {
     console.log('a user connected');
@@ -94,7 +94,7 @@ io.on('connection', function(socket) {
             }, ENTRY_TIME_LIMIT * 1000);
 
             if (players.length === 2) { // マッチング成立
-                gameStart();
+                io.emit('ready game');
             }
         }
     });
@@ -109,6 +109,17 @@ io.on('connection', function(socket) {
         } else if (mode === 'game') {
             io.emit('game exit');
             titleMode();
+        }
+    });
+
+    socket.on('ready to fight', function(userId) {
+        if (readyToFightUsersId.indexOf(userId) < 0) {
+            readyToFightUsersId.push(userId);
+        }
+
+        if (readyToFightUsersId.length === players.length) {
+            readyToFightUsersId = [];
+            gameStart();
         }
     });
 
@@ -177,11 +188,11 @@ function gameStart() {
     setUpGame();
     io.emit('game start', {deck: deck});
     gameMode();
+    jokaStart();
+}
 
-    // test
-    setTimeout(function() {
-        roundStart();
-    }, ANKI_TIME);
+function jokaStart() {
+    io.emit('joka start');
 }
 
 function roundStart() {

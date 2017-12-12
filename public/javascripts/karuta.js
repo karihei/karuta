@@ -15,6 +15,7 @@ var SHIMO_YOMI_INTERVAL = 3000; // 上の句を読み終えてから下の句を
 var waitingInterval;
 var isOtetsuki = false; // お手つき中の場合true
 var points = [0, 0]; // A, Bの総得点
+var JOKA = 'なにわづに さくやこのはな ふゆごもり いまをはるべと さくやこのはな';
 
 function onLoad() {
     initSocket();
@@ -48,10 +49,23 @@ function initSocket() {
         ps[1] && $('#player_b_name').text(ps[1].name);
     });
 
+    // プレイヤーが二人揃った
+    socket.on('ready game', function() {
+        waitingInterval && clearInterval(waitingInterval);
+        alert('対戦相手が決まりました。対戦を開始します。');
+        showInfoMessage('対戦相手の返事を待っています');
+        socket.emit('ready to fight', currentPlayer.id);
+    });
+
     socket.on('game start', function(resp) {
-        clearInterval(waitingInterval);
         hideInfoMessage();
         initFuda(resp.deck);
+    });
+
+    // 序歌
+    socket.on('joka start', function() {
+        hideInfoMessage();
+        showYomifuda(0, true);
     });
 
     socket.on('round start', function(resp) {
@@ -59,7 +73,6 @@ function initSocket() {
         isOtetsuki = false;
         $('.hand').remove();
         $('.batsu').remove();
-        $('.yomi_outer').css('opacity', 0).animate({'opacity': 1}, 300);
         hideInfoMessage();
         showYomifuda(currentAtariId);
     });
@@ -183,9 +196,10 @@ function showOtetsukiEffect(el) {
     el.append(batsuImg);
 }
 
-function showYomifuda(index) {
+function showYomifuda(index, opt_joka) {
+    $('.yomi_outer').css('opacity', 0).animate({'opacity': 1}, 300);
     yomiTime = new Date().getTime();
-    var sp = karutaList[index]['bodyKana'].split(' ');
+    var sp = opt_joka ? JOKA.split(' ') : karutaList[index]['bodyKana'].split(' ');
     var kaminoku = sp[0] + ' ' + sp[1] + ' ' + sp[2];
     var shimonoku = sp[3] + ' ' + sp[4];
     var kaminokuEl = $('#kaminoku');
@@ -229,12 +243,6 @@ function showYomifuda(index) {
 function waitingEntryMode() {
     showInfoMessage('対戦相手を待っています。', true)
     $('#container_ready_to_fight').show();
-}
-
-function noEntryMode() {
-    $('#name_input').show();
-    $('#container_login').show();
-    $('#container_ready_to_fight').hide();
 }
 
 function showInfoMessage(text, opt_animate) {
