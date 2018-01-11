@@ -26,12 +26,12 @@ function onLoad() {
 
 function startPing() {
     setInterval(function() {
-        var pingData = {ping: new Date().getTime()};
         if (currentPlayer) {
+            var pingData = {ping: new Date().getTime()};
             pingData['userId'] = currentPlayer.id;
+            socket.emit('send ping', pingData);
         }
-        socket.emit('send ping', pingData);
-    }, 5000);
+    }, 1000);
 
     socket.on('send pong', function(ping) {
         console.log(ping);

@@ -57,6 +57,8 @@ var players = [];
 var entryTimeout = null;
 var lastEntryTime = 0; // 最新のエントリー時間
 var mode = 'title'; // title->タイトル, entry->エントリー待機中, game->ゲーム中, debug->デバッグ
+var heatBeatInterval = null; // 生存確認用
+var currentPlayersPings = {}; // {userId: pingの送信時刻(UNIX time)}
 
 // ラウンドごとに初期化が必要
 var atariId = -1; // そのラウンドのあたり札
@@ -81,7 +83,9 @@ io.on('connection', function(socket) {
     }
 
     socket.on('send ping', function(pingData) {
+        // pingData: {userId: Int , ping: Int}
         socket.emit('send pong', new Date().getTime() - pingData.ping);
+        currentPlayersPings[pingData.userId] = pingData.ping
     });
 
     // エントリー受付
@@ -155,13 +159,16 @@ io.on('connection', function(socket) {
 
     // 歌が読み終わった時
     socket.on('yomi end', function(userId) {
+        debug('yomi end:' + userId);
         if (yomiEndPlayersId.indexOf(userId) < 0) {
             yomiEndPlayersId.push(userId);
+            debug('push:' + userId);
         }
 
         if (yomiEndPlayersId.length === players.length) {
             yomiEndPlayersId = [];
             roundStart();
+            debug('round start:' + userId);
         }
     });
 
@@ -221,6 +228,18 @@ function setUpGame() {
     for(var j = 0;j < MAX_DECK_SIZE;j++) {
         deck.push(cardList.shift());
     }
+
+    clearInterval(heatBeatInterval);
+    heatBeatInterval = setInterval(function() {
+        __.each(currentPlayersPings, function(value, key) {
+            // 5秒以上pingが返ってきてなかったら接続断と判断
+            if(new Date().getTime() - value > 5000) {
+                debug('UserId: ' + key +'が死にました');
+                io.emit('game exit');
+                titleMode();
+            }
+        });
+    }, 1000);
 }
 
 function gameStart(opt_skipJoka) {
@@ -267,7 +286,7 @@ function reset() {
 
     players = [];
     lastEntryTime = 0;
-    atariFudas = [];
+    currentPlayersPings = {};
     entryTimeout && clearTimeout(entryTimeout);
 }
 
