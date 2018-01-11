@@ -13,6 +13,8 @@ var debug = require('debug')('karuta:server');
 var index = require('./routes/index');
 var api   = require('./routes/api');
 
+var isDebug = false; // デバッグ時はTRUE
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
@@ -54,7 +56,7 @@ var idCount = 0;
 var players = [];
 var entryTimeout = null;
 var lastEntryTime = 0; // 最新のエントリー時間
-var mode = 'title'; // title->タイトル, entry->エントリー待機中, game->ゲーム中
+var mode = 'title'; // title->タイトル, entry->エントリー待機中, game->ゲーム中, debug->デバッグ
 
 // ラウンドごとに初期化が必要
 var atariId = -1; // そのラウンドのあたり札
@@ -62,24 +64,31 @@ var yomiEndPlayersId = []; // クライアント側で歌読みが終わった�
 var roundWinnerId = -1; // そのラウンドの勝者ID
 
 // ゲームごとに初期化が必要
-var atariFudas = []; // あたり札の履歴
 var cardList = []; // 100首の札リスト
 var deck = []; // 場の札リスト
 var readyToFightUsersId = []; // ゲームの準備が整ったプレイヤー一覧
+
+function createPlayer(id, name, hp, atk) {
+    return {id: id, name: name, hp: hp, atk: atk};
+}
 
 io.on('connection', function(socket) {
     console.log('a user connected');
     var currentTime = Math.floor(new Date().getTime() / 1000);
 
-    if (players.length > 0) {
+    if (mode === 'entry' && players.length > 0) {
         emitNameEntry(players, Math.max(ENTRY_TIME_LIMIT - (currentTime - lastEntryTime), 0));
     }
+
+    socket.on('send ping', function(pingData) {
+        socket.emit('send pong', new Date().getTime() - pingData.ping);
+    });
 
     // エントリー受付
     socket.on('name entry', function(name) {
         if (players.length <= 2) {
             entryMode();
-            players.push({id: idCount++, name: name});
+            players.push(createPlayer(idCount++, name, 1000, 100));
             emitNameEntry(players, ENTRY_TIME_LIMIT);
             lastEntryTime = Math.floor(new Date().getTime() / 1000);
 
@@ -119,7 +128,7 @@ io.on('connection', function(socket) {
 
         if (readyToFightUsersId.length === players.length) {
             readyToFightUsersId = [];
-            gameStart();
+            gameStart(isDebug);
         }
     });
 
@@ -131,10 +140,15 @@ io.on('connection', function(socket) {
             return;
         }
 
+        // あたり札を取った
         if (atariId === resp.atari) {
             roundWinnerId = resp.userId;
+            var rival = getRival(resp.userId);
+            var player = getPlayer(resp.userId);
+            var updatedHp = rival.hp - player.atk;
+            updateHp(rival, updatedHp);
             io.emit('harai atari', resp);
-        } else {
+        } else { // お手つきをした
             io.emit('harai otetsuki', resp);
         }
     });
@@ -150,7 +164,32 @@ io.on('connection', function(socket) {
             roundStart();
         }
     });
+
+    socket.on('fetch game info', function() {
+        if (players.length === 2) {
+            return;
+        }
+    });
+
 });
+
+function updateHp(player, hp) {
+    player.hp = hp;
+    io.emit('update hp', players);
+}
+
+function getPlayer(userId) {
+    return __.find(players, function(player) {
+        return player.id === userId;
+    });
+}
+
+// 対戦相手を取得する
+function getRival(userId) {
+    return __.find(players, function(player) {
+        return player.id !== userId;
+    });
+}
 
 function removePlayer(userId) {
     players = __.filter(players, function(player) {
@@ -184,11 +223,15 @@ function setUpGame() {
     }
 }
 
-function gameStart() {
+function gameStart(opt_skipJoka) {
     setUpGame();
     io.emit('game start', {deck: deck});
     gameMode();
-    jokaStart();
+    if (opt_skipJoka) {
+        roundStart();
+    }  else {
+        jokaStart();
+    }
 }
 
 function jokaStart() {
@@ -197,12 +240,11 @@ function jokaStart() {
 
 function roundStart() {
     roundReset();
-    do {
-        atariId = deck[Math.floor(Math.random() * (deck.length - 1))];
-    } while(atariFudas.indexOf(atariId) >= 0 && atariFudas.length !== deck.length) ;
-    atariFudas.push(atariId);
-
-    io.emit('round start', {atari: atariId});
+    deck = __.shuffle(deck);
+    atariId = deck.shift();
+    if (atariId) {
+        io.emit('round start', {atari: atariId});
+    }
 }
 
 function emitNameEntry(players, remain) {

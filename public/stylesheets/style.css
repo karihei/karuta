@@ -41,11 +41,11 @@ a {
   font-size: 3.0em;
 }
 
-#player_a_name {
+.red_player {
   color: #f00;
 }
 
-#player_b_name {
+.blue_player {
   color: #00f;
 }
 

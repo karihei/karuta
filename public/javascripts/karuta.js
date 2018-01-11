@@ -20,6 +20,22 @@ var JOKA = 'なにわづに さくやこのはな ふゆごもり いまをは�
 function onLoad() {
     initSocket();
     initViews();
+    fetchGameInfo();
+    startPing();
+}
+
+function startPing() {
+    setInterval(function() {
+        var pingData = {ping: new Date().getTime()};
+        if (currentPlayer) {
+            pingData['userId'] = currentPlayer.id;
+        }
+        socket.emit('send ping', pingData);
+    }, 5000);
+
+    socket.on('send pong', function(ping) {
+        console.log(ping);
+    })
 }
 
 function initSocket() {
@@ -33,7 +49,7 @@ function initSocket() {
         }
 
         // ユーザIDを設定
-        $.each(ps, function(i, player) {
+        _.each(ps, function(player) {
             if (player.name === userName) {
                 currentPlayer = player;
             }
@@ -45,8 +61,8 @@ function initSocket() {
 
         players = ps.slice();
 
-        ps[0] && $('#player_a_name').text(ps[0].name);
-        ps[1] && $('#player_b_name').text(ps[1].name);
+        ps[0] && $('.player_name.red_player').text(ps[0].name).parent().attr('id', 'pid-' + ps[0].id);
+        ps[1] && $('.player_name.blue_player').text(ps[1].name).parent().attr('id', 'pid-' + ps[1].id);
     });
 
     // プレイヤーが二人揃った
@@ -81,12 +97,10 @@ function initSocket() {
     socket.on('harai atari', function(resp) {
         var atariEl = $('.fuda#' + resp.atari);
         showHandEffect(atariEl);
-        showInfoMessage(findUserNameById(resp.userId) + 'さんが取りました', true);
+        showInfoMessage(findUserById(resp.userId).name + 'さんが取りました', true);
         if(players[0].id === resp.userId) {
-            addPoint(0, 1);
             atariEl.css({'backgroundColor': '#f50b0b7d'})
         } else {
-            addPoint(1, 1);
             atariEl.css({'backgroundColor': '#0000ff82'})
         }
     });
@@ -98,12 +112,16 @@ function initSocket() {
        }
         var fudaEl = $('.fuda#' + resp.atari);
         showOtetsukiEffect(fudaEl);
-        showInfoMessage(findUserNameById(resp.userId) + 'さんがお手つきしました', true);
+        showInfoMessage(findUserById(resp.userId).name + 'さんがお手つきしました', true);
     });
 
     // 誰かが通信を切断した
     socket.on('game exit', function() {
         exitGame();
+    });
+
+    socket.on('update hp', function(ps) {
+        updateHp(ps);
     });
 }
 
@@ -118,6 +136,11 @@ function initViews() {
         }
     }, 1000);
 }
+
+function fetchGameInfo() {
+    socket.emit('fetch game info');
+}
+
 function initFuda(deck) {
     var rows = [];
     for (var j = 0;j < ROW_SIZE;j++) {
@@ -257,25 +280,33 @@ function hideInfoMessage() {
     $('#msg_info').animate({'opacity': 0}, 100);
 }
 
-function addPoint(index, point) {
-    points[index] += point;
-    var nameEl;
-    if (index === 0) {
-        nameEl = $('#player_a_name');
-    } else {
-        nameEl = $('#player_b_name');
-    }
-    nameEl.text(players[index].name + '(' +points[index] + '点)')
-}
-
-function findUserNameById(id) {
-    var name = '';
-    $(players).each(function(i, p) {
-        if (p.id === id) {
-            name = p.name;
+function updateHp(updatedPlayers) {
+    _.each(updatedPlayers, function(updatedPlayer) {
+        console.dir(updatedPlayer);
+        var player_ = findUserById(updatedPlayer.id);
+        if (player_) {
+            var amount = updatedPlayer.hp - player_.hp;
+            hpEffect(updatedPlayer, amount);
         }
     });
-    return name;
+    players = _.clone(updatedPlayers);
+}
+
+function hpEffect(player, amount) {
+    if (amount === 0 ) {
+        return;
+    } else if(amount < 0) {
+        // ダメージ
+        $('#pid-' + player.id + ' .hp_bar').text(player.hp);
+    } else {
+        // 回復
+    }
+}
+
+function findUserById(id) {
+    return _.find(players, function(player) {
+        return player.id === id;
+    });
 }
 
 function exitGame() {
