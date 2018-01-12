@@ -61,8 +61,9 @@ function initSocket() {
 
         players = ps.slice();
 
-        ps[0] && $('.player_name.red_player').text(ps[0].name).parent().attr('id', 'pid-' + ps[0].id);
-        ps[1] && $('.player_name.blue_player').text(ps[1].name).parent().attr('id', 'pid-' + ps[1].id);
+        _.each(ps, function(p) {
+            setupPlayerInfo(p);
+        });
     });
 
     // プレイヤーが二人揃った
@@ -75,6 +76,7 @@ function initSocket() {
 
     socket.on('game start', function(resp) {
         hideInfoMessage();
+        $('#container_ready_to_fight').show();
         initFuda(resp.deck);
     });
 
@@ -170,6 +172,16 @@ function initFuda(deck) {
             rowIndex++;
         }
     }
+}
+
+// プレイヤー名やHPなどの情報を要素にセットする
+function setupPlayerInfo(player) {
+    $('.player_name').each(function(index, el) {
+        if (!$(el).parent().attr('id')) {
+            $(el).text(player.name).parent().attr('id', 'pid-' + player.id);
+            return false;
+        }
+    });
 }
 
 function onBeforeUnload() {

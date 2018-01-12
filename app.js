@@ -13,7 +13,7 @@ var debug = require('debug')('karuta:server');
 var index = require('./routes/index');
 var api   = require('./routes/api');
 
-var isDebug = false; // デバッグ時はTRUE
+var isDebug = true; // デバッグ時はTRUE
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -93,19 +93,23 @@ io.on('connection', function(socket) {
         if (players.length <= 2) {
             entryMode();
             players.push(createPlayer(idCount++, name, 1000, 100));
+            if (isDebug) {
+                players.push(createPlayer(idCount++, name + '_2p', 1000, 100));
+            }
             emitNameEntry(players, ENTRY_TIME_LIMIT);
             lastEntryTime = Math.floor(new Date().getTime() / 1000);
 
             entryTimeout && clearTimeout(entryTimeout);
-            entryTimeout = setTimeout(function() {
-                // 時間内に二人集まらなかったら解散
-                if (players.length < 2) {
-                    players = [];
-                    emitNameEntry(players, 0);
-                    titleMode();
-                }
-            }, ENTRY_TIME_LIMIT * 1000);
-
+            if (players.length <= 2) {
+                entryTimeout = setTimeout(function() {
+                    // 時間内に二人集まらなかったら解散
+                    if (players.length < 2) {
+                        players = [];
+                        emitNameEntry(players, 0);
+                        titleMode();
+                    }
+                }, ENTRY_TIME_LIMIT * 1000);
+            }
             if (players.length === 2) { // マッチング成立
                 io.emit('ready game');
             }
@@ -130,7 +134,7 @@ io.on('connection', function(socket) {
             readyToFightUsersId.push(userId);
         }
 
-        if (readyToFightUsersId.length === players.length) {
+        if (readyToFightUsersId.length === players.length || isDebug) {
             readyToFightUsersId = [];
             gameStart(isDebug);
         }
@@ -162,13 +166,11 @@ io.on('connection', function(socket) {
         debug('yomi end:' + userId);
         if (yomiEndPlayersId.indexOf(userId) < 0) {
             yomiEndPlayersId.push(userId);
-            debug('push:' + userId);
         }
 
-        if (yomiEndPlayersId.length === players.length) {
+        if (yomiEndPlayersId.length === players.length || isDebug) {
             yomiEndPlayersId = [];
             roundStart();
-            debug('round start:' + userId);
         }
     });
 

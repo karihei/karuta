@@ -1,5 +1,11 @@
+html {
+  touch-action: none;
+}
+
 body {
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  background-image: url(../images/bg.png);
+  background-size: cover;
 }
 
 a {
@@ -29,7 +35,7 @@ a {
 .title {
   text-align: center;
   width: 100%;
-  margin-top: 15px;
+  margin-top: 300px;
 }
 
 .player_list {
@@ -54,18 +60,19 @@ a {
 }
 
 #name_input {
-  display: inline;
-  width: 60%;
+  text-align: center;
+  width: 70%;
   height: 110px;
   font-size: 350%;
+  margin: auto;
 }
 
 #name_submit {
-  display: inline;
-  margin: 0 0 28px 10px;
   width: 35%;
   height: 110px;
   font-size: 250%;
+  margin: 25px auto;
+  display: block;
 }
 
 #yomifuda_area {
@@ -118,4 +125,61 @@ a {
   left: 5px;
   width: 100%;
   overflow: hidden;
+}
+
+
+/* HPゲージ */
+.gauge_wrap li {
+  position: relative;
+  display: inline-block;
+}
+
+.gauge {
+  width: 30%;
+}
+
+.gauge_wrap li:first-child {
+  margin-right: 10px;
+}
+
+.gauge_wrap .gauge_ttl {
+  background-color: #000;
+  width: 82px;
+}
+
+.gauge_wrap .gauge_ttl:after {
+  content: "";
+  position: absolute;
+  left: 82px;
+  width: 0;
+  height: 0;
+  border: 22px solid transparent;
+  border-left: 22px solid #000;
+  border-bottom: 22px solid #000;
+}
+
+.gauge_wrap .gauge_ttl span {
+  padding-left: 5px;
+  color: #FFF;
+  font-size: 1.2rem;
+}
+
+.gauge_wrap .gauge_bg {
+  position: relative;
+  background: -moz-linear-gradient(top, #555, #222);
+  background: -webkit-gradient(linear, left top, left bottom, from(#555), to(#222));
+  border: solid 5px #000;
+  width: 300px;
+  height: 32px;
+}
+
+.gauge_wrap .gauge_main {
+  background: -moz-linear-gradient(top, #ffacae, #ff100e);
+  background: -webkit-gradient(linear, left top, left bottom, from(#ffacae), to(#ff313d));
+  height: 22px;
+}
+
+.gauge_wrap .gauge_right {
+  background: -moz-linear-gradient(top, #c6faff, #079cff);
+  background: -webkit-gradient(linear, left top, left bottom, from(#c6faff), to(#079cff));
 }
