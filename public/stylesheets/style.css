@@ -35,11 +35,90 @@ a {
 .title {
   text-align: center;
   width: 100%;
-  margin-top: 300px;
+  margin-top: 10px;
 }
 
 .player_list {
   text-align: center;
+}
+
+.img_vs {
+  width: 9%;
+}
+
+#result_container {
+  display: none;
+
+  position: absolute;
+  width: 80%;
+  border: 1px solid;
+  height: 35%;
+  background-color: #000000e3;
+  border-radius: 3px;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: auto;
+  font-size: 5em;
+  color: #fff;
+  padding: 40px;
+}
+
+.player_result {
+  display: inline-block;
+  width: 50%;
+  height: 100%;
+  text-align: center;
+}
+
+.result_detail_outer {
+  border: 1px solid;
+}
+
+.result_winner {
+  text-align: center;
+  padding-bottom: 40px;
+}
+
+.result_detail_name {
+  font-size: 0.4em;
+  padding-bottom: 8px;
+}
+
+.result_red_player .result_detail_name {
+  text-align: left;
+  padding-left: 20px;
+}
+
+.result_blue_player .result_detail_name {
+  text-align: right;
+  padding-right: 20px;
+}
+
+.result_detail_label {
+  font-size: 0.4em;
+  padding-top: 8px;
+}
+
+.result_detail_value {
+  font-size: 0.6em;
+  padding-bottom: 8px;
+}
+
+#container_game_board {
+  display: none;
+}
+
+.player_container {
+  margin: 0 -20px;
+}
+
+.player {
+  display: inline-block;
+  width: 50%;
+  height: 180px;
+  padding: 8px;
 }
 
 .player_name {
@@ -47,16 +126,19 @@ a {
   font-size: 3.0em;
 }
 
+.player_hp, .player_hp_label {
+  padding: 10px 0;
+  font-size: 3.0em;
+}
+
 .red_player {
-  color: #f00;
+  background-color: #ffacb3;
+  text-align: left;
 }
 
 .blue_player {
-  color: #00f;
-}
-
-.img_vs {
-  width: 9%;
+  background-color: #00B7FF;
+  text-align: right;
 }
 
 #name_input {
@@ -75,19 +157,36 @@ a {
   display: block;
 }
 
+
+#waiting_container {
+  background-color: #00000070;
+  color: #fff;
+  margin: 0 -20px;
+  padding: 20px;
+}
+
+#waiting_player {
+  font-size: 40pt;
+  text-align: center;
+  width: 100%;
+  display: inline-block;
+}
+
 #yomifuda_area {
   margin: 20px;
   padding: 30px;
   font-family: "ヒラギノ明朝 ProN W6", "HiraMinProN-W6", "HG明朝E", "ＭＳ Ｐ明朝", "MS PMincho", "MS 明朝", serif;
   line-height: 1.5em;
   font-size: 290%;
-  height: 205px;
+  height: 175px;
+  text-align: center;
 }
 
-.yomi_outer {
+.yomi_container {
   opacity: 0;
-  background: url(../images/yomi_bg.png) center center no-repeat;
-  background-size: 100% 100%;
+  background-color: #0000007d;
+  color: #fff;
+  margin: 0 -20px;
 }
 
 #fuda_area {

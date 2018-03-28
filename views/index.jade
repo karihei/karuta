@@ -7,28 +7,42 @@ block content
     input#name_input(placeholder="なまえをいれてね", maxlength=5).form-control
     input#name_submit(type="submit" value="決定").btn.btn-default
 
-  div#container_ready_to_fight(style="display:none;")
-    span#entry_remain(style="display:none")="待機時間：0"
-    +hpbar
+  div#waiting_container(style="display:none;")
+    span#waiting_player
 
   div#container_game_board
-    div.yomi_outer
+    div.player_container
+      span.player.red_player
+        +player
+      span.player.blue_player
+        +player
+    div.yomi_container
       div#yomifuda_area
         div#kaminoku
         div#shimonoku
     div#fuda_area
 
-mixin hpbar()
-  ul.gauge_wrap
-    li.gauge
-      div.gauge_ttl
-        span.player_name.red_player="＜募集中＞"
-      div.gauge_bg
-        div.gauge_main(style="width: 100%;")
-    li
-      img(src="images/vs.png").img_vs
-    li.gauge
-      div.gauge_ttl
-        span.player_name.blue_player="＜募集中＞"
-      div.gauge_bg
-        div.gauge_main.gauge_right(style="width: 60%;")
+    div#result_container
+      div.result_winner="やうへい WINS!"
+      div.result_detail
+        span.result_red_player.player_result
+          +result
+        span.result_blue_player.player_result
+          +result
+
+mixin result()
+  div.result_detail_name="やうへい"
+  div.result_detail_outer
+    div.result_detail_label="平均反応速度"
+    div.result_detail_value.result_speed="300"
+    div.result_detail_label="取った札"
+    div.result_detail_value.result_fuda_count="4"
+
+mixin player()
+  div
+    span.player_name
+    span.buff
+  div
+    span.player_hp_label="HP: "
+    span.player_hp
+

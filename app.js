@@ -13,7 +13,7 @@ var debug = require('debug')('karuta:server');
 var index = require('./routes/index');
 var api   = require('./routes/api');
 
-var isDebug = true; // デバッグ時はTRUE
+var isDebug = false; // デバッグ時はTRUE
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -64,6 +64,7 @@ var currentPlayersPings = {}; // {userId: pingの送信時刻(UNIX time)}
 var atariId = -1; // そのラウンドのあたり札
 var yomiEndPlayersId = []; // クライアント側で歌読みが終わったプレイヤー一覧
 var roundWinnerId = -1; // そのラウンドの勝者ID
+var roundTime = 0; // そのラウンドの経過時間
 
 // ゲームごとに初期化が必要
 var cardList = []; // 100首の札リスト
@@ -71,7 +72,7 @@ var deck = []; // 場の札リスト
 var readyToFightUsersId = []; // ゲームの準備が整ったプレイヤー一覧
 
 function createPlayer(id, name, hp, atk) {
-    return {id: id, name: name, hp: hp, atk: atk};
+    return {id: id, name: name, hp: hp, atk: atk, speeds: [], count: 0};
 }
 
 io.on('connection', function(socket) {
@@ -92,7 +93,7 @@ io.on('connection', function(socket) {
     socket.on('name entry', function(name) {
         if (players.length <= 2) {
             entryMode();
-            players.push(createPlayer(idCount++, name, 1000, 100));
+            players.push(createPlayer(idCount++, name, 1000, 200));
             if (isDebug) {
                 players.push(createPlayer(idCount++, name + '_2p', 1000, 100));
             }
@@ -142,18 +143,23 @@ io.on('connection', function(socket) {
 
     // 誰かが取った時
     socket.on('harai', function(resp) {
-        debug(resp);
-        // 既にラウンド勝者が決まっている場合は何もしない
-        if (roundWinnerId >= 0) {
-            return;
-        }
-
         // あたり札を取った
         if (atariId === resp.atari) {
+            var toriTime = new Date().getTime();
+            // 既にラウンド勝者が決まっている場合は何もしない
+            if (roundWinnerId >= 0) {
+                return;
+            }
+
             roundWinnerId = resp.userId;
             var rival = getRival(resp.userId);
             var player = getPlayer(resp.userId);
-            var updatedHp = rival.hp - player.atk;
+            var damage = calcDamage(player, rival);
+            var updatedHp = rival.hp - damage;
+            player.count++;
+            player.speeds.push((toriTime - roundTime) / 1000);
+            rival.damage += damage;
+
             updateHp(rival, updatedHp);
             io.emit('harai atari', resp);
         } else { // お手つきをした
@@ -182,8 +188,17 @@ io.on('connection', function(socket) {
 
 });
 
+// ダメージ計算
+function calcDamage(player, rival) {
+    // とりあえずいまは素直にATK分ダメージ
+    return player.atk;
+}
+
 function updateHp(player, hp) {
     player.hp = hp;
+    if (player.hp <= 0) {
+        io.emit('knockout', players);
+    }
     io.emit('update hp', players);
 }
 
@@ -275,6 +290,7 @@ function emitNameEntry(players, remain) {
 function roundReset() {
     roundWinnerId = -1;
     yomiEndPlayersId = [];
+    roundTime = new Date().getTime();
 }
 
 function gameReset() {

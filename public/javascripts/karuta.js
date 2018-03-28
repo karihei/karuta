@@ -57,13 +57,10 @@ function initSocket() {
 
         if (ps.length === 1) {
             waitingEntryMode();
+            $('#waiting_player').text(ps[0].name + 'さんが待機しています。');
         }
 
         players = ps.slice();
-
-        _.each(ps, function(p) {
-            setupPlayerInfo(p);
-        });
     });
 
     // プレイヤーが二人揃った
@@ -76,7 +73,8 @@ function initSocket() {
 
     socket.on('game start', function(resp) {
         hideInfoMessage();
-        $('#container_ready_to_fight').show();
+        $('#container_game_board').show();
+        setupPlayerInfo();
         initFuda(resp.deck);
     });
 
@@ -115,6 +113,29 @@ function initSocket() {
         var fudaEl = $('.fuda#' + resp.atari);
         showOtetsukiEffect(fudaEl);
         showInfoMessage(findUserById(resp.userId).name + 'さんがお手つきしました', true);
+    });
+
+    socket.on('knockout', function(resp) {
+        $('#result_container').show();
+        players = resp;
+        var _setPlayerResult = function(el, i) {
+            var speeds = players[i].speeds;
+            var sum = 0;
+            var speed = 999;
+            _.each(speeds, function(s) {
+                sum += s;
+            });
+            if (speeds.length > 0) {
+                var ll = sum / speeds.length * 100;
+                speed = Math.round(ll) / 100;
+            }
+            $('.result_detail_name', el).text(players[i].name);
+            $('.result_speed', el).text(speed + '秒');
+            $('.result_fuda_count', el).text(players[i].count);
+        };
+
+        _setPlayerResult($('.result_red_player'), 0);
+        _setPlayerResult($('.result_blue_player'), 1);
     });
 
     // 誰かが通信を切断した
@@ -175,13 +196,19 @@ function initFuda(deck) {
 }
 
 // プレイヤー名やHPなどの情報を要素にセットする
-function setupPlayerInfo(player) {
-    $('.player_name').each(function(index, el) {
-        if (!$(el).parent().attr('id')) {
-            $(el).text(player.name).parent().attr('id', 'pid-' + player.id);
-            return false;
-        }
-    });
+function setupPlayerInfo() {
+    if (players.length !== 2) {
+        return
+    }
+
+    var _setPlayerInfo = function(el, i) {
+        $(el).addClass('pid-' + players[i].id);
+        $('.player_name', el).text(players[i].name);
+        $('.player_hp', el).text(players[i].hp);
+    };
+
+    _setPlayerInfo($('.red_player'), 0);
+    _setPlayerInfo($('.blue_player'), 1);
 }
 
 function onBeforeUnload() {
@@ -232,7 +259,7 @@ function showOtetsukiEffect(el) {
 }
 
 function showYomifuda(index, opt_joka) {
-    $('.yomi_outer').css('opacity', 0).animate({'opacity': 1}, 300);
+    $('.yomi_container').css('opacity', 0).animate({'opacity': 1}, 300);
     yomiTime = new Date().getTime();
     var sp = opt_joka ? JOKA.split(' ') : karutaList[index]['bodyKana'].split(' ');
     var kaminoku = sp[0] + ' ' + sp[1] + ' ' + sp[2];
@@ -263,7 +290,7 @@ function showYomifuda(index, opt_joka) {
 
         if (totalCount > kaminoku.length + shimonoku.length) {
             clearTimeout(timer);
-            $('.yomi_outer').animate({'opacity': 0}, 4000);
+            $('.yomi_container').animate({'opacity': 0}, 4000);
             setTimeout(function() {
                 socket.emit('yomi end', currentPlayer.id);
             }, 5000);
@@ -277,7 +304,7 @@ function showYomifuda(index, opt_joka) {
 
 function waitingEntryMode() {
     showInfoMessage('対戦相手を待っています。', true)
-    $('#container_ready_to_fight').show();
+    $('#waiting_container').show();
 }
 
 function showInfoMessage(text, opt_animate) {
@@ -294,7 +321,6 @@ function hideInfoMessage() {
 
 function updateHp(updatedPlayers) {
     _.each(updatedPlayers, function(updatedPlayer) {
-        console.dir(updatedPlayer);
         var player_ = findUserById(updatedPlayer.id);
         if (player_) {
             var amount = updatedPlayer.hp - player_.hp;
@@ -309,7 +335,7 @@ function hpEffect(player, amount) {
         return;
     } else if(amount < 0) {
         // ダメージ
-        $('#pid-' + player.id + ' .hp_bar').text(player.hp);
+        $('.pid-' + player.id + ' .player_hp').text(player.hp);
     } else {
         // 回復
     }
