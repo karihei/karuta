@@ -318,7 +318,7 @@ function showInfoMessage(text, opt_animate) {
 
 function hideInfoMessage() {
     $('#msg_info').animate({'opacity': 0}, 100);
-    $('.waiting_container').hide();
+    $('#waiting_container').hide();
 }
 
 function updateHp(updatedPlayers) {
