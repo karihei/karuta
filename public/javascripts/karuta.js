@@ -117,7 +117,8 @@ function initSocket() {
 
     socket.on('knockout', function(resp) {
         $('#result_container').show();
-        players = resp;
+        $('.result_winner').text(resp.winner.name + ' WINS!');
+        players = resp.players;
         var _setPlayerResult = function(el, i) {
             var speeds = players[i].speeds;
             var sum = 0;
@@ -317,6 +318,7 @@ function showInfoMessage(text, opt_animate) {
 
 function hideInfoMessage() {
     $('#msg_info').animate({'opacity': 0}, 100);
+    $('#waiting_container').hide();
 }
 
 function updateHp(updatedPlayers) {

@@ -56,7 +56,7 @@ var idCount = 0;
 var players = [];
 var entryTimeout = null;
 var lastEntryTime = 0; // 最新のエントリー時間
-var mode = 'title'; // title->タイトル, entry->エントリー待機中, game->ゲーム中, debug->デバッグ
+var mode = 'title'; // title->タイトル, entry->エントリー待機中, game->ゲーム中, debug->デバッグ, result->結果画面
 var heatBeatInterval = null; // 生存確認用
 var currentPlayersPings = {}; // {userId: pingの送信時刻(UNIX time)}
 
@@ -161,6 +161,10 @@ io.on('connection', function(socket) {
             rival.damage += damage;
 
             updateHp(rival, updatedHp);
+            if (rival.hp <= 0) {
+                io.emit('knockout', {players: players, winner: player});
+                resultMode();
+            }
             io.emit('harai atari', resp);
         } else { // お手つきをした
             io.emit('harai otetsuki', resp);
@@ -169,7 +173,6 @@ io.on('connection', function(socket) {
 
     // 歌が読み終わった時
     socket.on('yomi end', function(userId) {
-        debug('yomi end:' + userId);
         if (yomiEndPlayersId.indexOf(userId) < 0) {
             yomiEndPlayersId.push(userId);
         }
@@ -196,9 +199,6 @@ function calcDamage(player, rival) {
 
 function updateHp(player, hp) {
     player.hp = hp;
-    if (player.hp <= 0) {
-        io.emit('knockout', players);
-    }
     io.emit('update hp', players);
 }
 
@@ -232,6 +232,10 @@ function entryMode() {
 
 function gameMode() {
     mode = 'game';
+}
+
+function resultMode() {
+    mode = 'result';
 }
 
 function setUpGame() {
@@ -275,6 +279,9 @@ function jokaStart() {
 }
 
 function roundStart() {
+    if (mode === 'result') {
+        return;
+    }
     roundReset();
     deck = __.shuffle(deck);
     atariId = deck.shift();
