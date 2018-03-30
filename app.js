@@ -13,7 +13,7 @@ var debug = require('debug')('karuta:server');
 var index = require('./routes/index');
 var api   = require('./routes/api');
 
-var isDebug = false; // デバッグ時はTRUE
+var isDebug = true; // デバッグ時はTRUE
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

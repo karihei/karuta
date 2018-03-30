@@ -112,6 +112,18 @@ a {
 
 .player_container {
   margin: 0 -20px;
+  position: relative;
+}
+
+.vs {
+  position: absolute;
+  right: 0;
+  z-index: 3;
+  left: 0;
+  margin-left: auto;
+  margin-right: auto;
+  width: 138px;
+  top: -20px;
 }
 
 .player {
@@ -152,7 +164,7 @@ a {
   position: relative;
   margin: 0 16px;
   height: 50px;
-  width: 90%;
+  width: 80%;
   background: #222222;
 }
 
@@ -220,11 +232,11 @@ a {
 }
 
 .red_player .hpbar_outer {
-  margin-left: 16px;
+  float: left;
 }
 
 .blue_player .hpbar_outer {
-  margin-left: 32px;
+  float: right
 }
 
 .red_player .hpbar_inner {
