@@ -115,29 +115,147 @@ a {
 }
 
 .player {
+  position: relative;
   display: inline-block;
   width: 50%;
   height: 180px;
-  padding: 8px;
-}
-
-.player_name {
-  padding: 10px;
-  font-size: 3.0em;
-}
-
-.player_hp, .player_hp_label {
-  padding: 10px 0;
-  font-size: 3.0em;
+  padding: 16px;
 }
 
 .red_player {
-  background-color: #ffacb3;
+  background-image: url(../images/red_bg.jpg);
+  background-size: cover;
+}
+
+.blue_player {
+  background-image: url(../images/blue_bg.jpg);
+  background-size: cover;
+}
+
+.player_name {
+  color: #FFFFFF;
+  padding: 10px;
+  font-size: 3.0em;
+  font-family: "ヒラギノ明朝 ProN W6", "HiraMinProN-W6", "HG明朝E", "ＭＳ Ｐ明朝", "MS PMincho", "MS 明朝", serif;
+}
+
+.player_hp_value {
+  font-family: 'Germania One', cursive;
+  font-size: 5em;
+  color: #f74747;
+  -webkit-text-stroke-width: 2px;
+  -webkit-text-stroke-color: #ffffff;
+  text-shadow: 0 0 42px #000;
+}
+
+.hpbar_outer {
+  position: relative;
+  margin: 0 16px;
+  height: 50px;
+  width: 90%;
+  background: #222222;
+}
+
+.red_player .hpbar_outer:after {
+  position: absolute;
+  content: '';
+  height: 50px;
+  width: 40px;
+  display: block;
+  top: 0;
+  right: -20px;
+  background: #222222;
+  transform: skew(30deg);
+}
+
+.blue_player .hpbar_outer:before {
+  position: absolute;
+  content: '';
+  height: 50px;
+  width: 40px;
+  display: block;
+  top: 0;
+  left: -20px;
+  background: #222222;
+  transform: skew(-30deg);
+}
+
+.hpbar_inner {
+  position: absolute;
+  height: 40px;
+  width: 100%;
+  background: -moz-linear-gradient(top, #ffee39, #ff7820);
+  background: -webkit-linear-gradient(top, #ffee39, #ff7820);
+  background: linear-gradient(to bottom,#ffee39, #ff7820);
+}
+
+.red_player .hpbar_inner:after {
+  z-index: 1;
+  position: absolute;
+  content: '';
+  height: 40px;
+  width: 40px;
+  display: block;
+  top: 0;
+  right: -12px;
+  transform: skew(30deg);
+  background: -moz-linear-gradient(top, #ffee39, #ff7820);
+  background: -webkit-linear-gradient(top, #ffee39, #ff7820);
+  background: linear-gradient(to bottom,#ffee39, #ff7820);
+}
+
+.blue_player .hpbar_inner:before {
+  z-index: 1;
+  position: absolute;
+  content: '';
+  height: 40px;
+  width: 40px;
+  display: block;
+  top: 0;
+  left: -12px;
+  transform: skew(-30deg);
+  background: -moz-linear-gradient(top, #ffee39, #ff7820);
+  background: -webkit-linear-gradient(top, #ffee39, #ff7820);
+  background: linear-gradient(to bottom,#ffee39, #ff7820);
+}
+
+.red_player .hpbar_outer {
+  margin-left: 16px;
+}
+
+.blue_player .hpbar_outer {
+  margin-left: 32px;
+}
+
+.red_player .hpbar_inner {
+  margin: 5px 0 0 5px;
+  left: 0;
+}
+
+.blue_player .hpbar_inner {
+  margin: 5px 5px 0 0;
+  right:0;
+}
+
+.player_hp_container {
+  position: absolute;
+  bottom: 5px;
+  z-index: 2;
+}
+
+.red_player .player_hp_container {
+   left: 50px;
+ }
+
+.blue_player .player_hp_container {
+  right: 50px;
+}
+
+.red_player {
   text-align: left;
 }
 
 .blue_player {
-  background-color: #00B7FF;
   text-align: right;
 }
 
@@ -209,6 +327,14 @@ a {
   letter-spacing: 0;
 }
 
+.fuda.red_fuda {
+  background: #0bf53f7d;
+}
+
+.fuda.blue_fuda {
+  background: #2c88ff94;
+}
+
 .hand {
   position: absolute;
   top: -10px;
@@ -226,59 +352,3 @@ a {
   overflow: hidden;
 }
 
-
-/* HPゲージ */
-.gauge_wrap li {
-  position: relative;
-  display: inline-block;
-}
-
-.gauge {
-  width: 30%;
-}
-
-.gauge_wrap li:first-child {
-  margin-right: 10px;
-}
-
-.gauge_wrap .gauge_ttl {
-  background-color: #000;
-  width: 82px;
-}
-
-.gauge_wrap .gauge_ttl:after {
-  content: "";
-  position: absolute;
-  left: 82px;
-  width: 0;
-  height: 0;
-  border: 22px solid transparent;
-  border-left: 22px solid #000;
-  border-bottom: 22px solid #000;
-}
-
-.gauge_wrap .gauge_ttl span {
-  padding-left: 5px;
-  color: #FFF;
-  font-size: 1.2rem;
-}
-
-.gauge_wrap .gauge_bg {
-  position: relative;
-  background: -moz-linear-gradient(top, #555, #222);
-  background: -webkit-gradient(linear, left top, left bottom, from(#555), to(#222));
-  border: solid 5px #000;
-  width: 300px;
-  height: 32px;
-}
-
-.gauge_wrap .gauge_main {
-  background: -moz-linear-gradient(top, #ffacae, #ff100e);
-  background: -webkit-gradient(linear, left top, left bottom, from(#ffacae), to(#ff313d));
-  height: 22px;
-}
-
-.gauge_wrap .gauge_right {
-  background: -moz-linear-gradient(top, #c6faff, #079cff);
-  background: -webkit-gradient(linear, left top, left bottom, from(#c6faff), to(#079cff));
-}

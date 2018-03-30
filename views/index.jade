@@ -42,7 +42,10 @@ mixin player()
   div
     span.player_name
     span.buff
-  div
-    span.player_hp_label="HP: "
-    span.player_hp
+  +hpbar
+  div.player_hp_container
+    span.player_hp_value
 
+mixin hpbar()
+  div.hpbar_outer
+    span.hpbar_inner

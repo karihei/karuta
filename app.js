@@ -72,7 +72,7 @@ var deck = []; // 場の札リスト
 var readyToFightUsersId = []; // ゲームの準備が整ったプレイヤー一覧
 
 function createPlayer(id, name, hp, atk) {
-    return {id: id, name: name, hp: hp, atk: atk, speeds: [], count: 0};
+    return {id: id, name: name, maxHp: 1000, hp: hp, atk: atk, speeds: [], count: 0};
 }
 
 io.on('connection', function(socket) {
@@ -93,7 +93,7 @@ io.on('connection', function(socket) {
     socket.on('name entry', function(name) {
         if (players.length <= 2) {
             entryMode();
-            players.push(createPlayer(idCount++, name, 1000, 200));
+            players.push(createPlayer(idCount++, name, 1000, 100));
             if (isDebug) {
                 players.push(createPlayer(idCount++, name + '_2p', 1000, 100));
             }
@@ -154,10 +154,11 @@ io.on('connection', function(socket) {
             roundWinnerId = resp.userId;
             var rival = getRival(resp.userId);
             var player = getPlayer(resp.userId);
-            var damage = calcDamage(player, rival);
+            var speed = (toriTime - roundTime) / 1000;
+            var damage = calcDamage(player, rival, speed);
             var updatedHp = rival.hp - damage;
             player.count++;
-            player.speeds.push((toriTime - roundTime) / 1000);
+            player.speeds.push(speed);
             rival.damage += damage;
 
             updateHp(rival, updatedHp);
@@ -192,12 +193,16 @@ io.on('connection', function(socket) {
 });
 
 // ダメージ計算
-function calcDamage(player, rival) {
-    // とりあえずいまは素直にATK分ダメージ
-    return player.atk;
+function calcDamage(player, rival, speed) {
+    // 早く取れば取るほどダメージUP
+    var speedBonus = Math.ceil(150 - (speed * 5));
+    return player.atk + speedBonus;
 }
 
 function updateHp(player, hp) {
+    if (hp <= 0) {
+        hp = 0;
+    }
     player.hp = hp;
     io.emit('update hp', players);
 }

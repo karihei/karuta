@@ -99,9 +99,9 @@ function initSocket() {
         showHandEffect(atariEl);
         showInfoMessage(findUserById(resp.userId).name + 'さんが取りました', true);
         if(players[0].id === resp.userId) {
-            atariEl.css({'backgroundColor': '#f50b0b7d'})
+            atariEl.addClass('red_fuda');
         } else {
-            atariEl.css({'backgroundColor': '#0000ff82'})
+            atariEl.addClass('blue_fuda');
         }
     });
 
@@ -129,6 +129,8 @@ function initSocket() {
             if (speeds.length > 0) {
                 var ll = sum / speeds.length * 100;
                 speed = Math.round(ll) / 100;
+            } else {
+                speed = '--';
             }
             $('.result_detail_name', el).text(players[i].name);
             $('.result_speed', el).text(speed + '秒');
@@ -205,7 +207,7 @@ function setupPlayerInfo() {
     var _setPlayerInfo = function(el, i) {
         $(el).addClass('pid-' + players[i].id);
         $('.player_name', el).text(players[i].name);
-        $('.player_hp', el).text(players[i].hp);
+        $('.player_hp_value', el).text(players[i].hp);
     };
 
     _setPlayerInfo($('.red_player'), 0);
@@ -247,7 +249,7 @@ function showHandEffect(el) {
 
     var handImg = $('<img>').addClass('hand').attr('src', '/images/hand.png');
     el.append(handImg);
-    handImg.animate({'width': '130%', 'opacity': 1}, 300);
+    handImg.animate({'width': '130%', 'opacity': 0.7}, 300);
 }
 
 function showOtetsukiEffect(el) {
@@ -333,11 +335,19 @@ function updateHp(updatedPlayers) {
 }
 
 function hpEffect(player, amount) {
+    var el = $('.pid-' + player.id);
+    var ratio = Math.ceil(player.hp / player.maxHp * 100);
     if (amount === 0 ) {
         return;
     } else if(amount < 0) {
         // ダメージ
-        $('.pid-' + player.id + ' .player_hp').text(player.hp);
+        $('.player_hp_value', el).text(player.hp);
+        $('.hpbar_inner', el).animate({'width': ratio + '%'}, 300, 'swing', function() {
+            if (player.hp <= 0) {
+                $('.hpbar_inner', el).hide();
+            }
+
+        });
     } else {
         // 回復
     }
