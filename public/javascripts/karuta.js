@@ -260,7 +260,14 @@ function showItoososhi(p, damage) {
     $('.itoososhi_container').show();
     var winner = is1P ? 'red' : 'blue';
     var looser = is1P ? 'blue' : 'red';
-    $('.itoososhi_' +  winner + '_player').show();
+    var winnerEl = $('.itoososhi_' +  winner + '_player');
+    winnerEl.show();
+    setTimeout(function() {
+        winnerEl.animate({'opacity': 0}, 300, function(el, i) {
+            winnerEl.css({'opacity': 1});
+            winnerEl.hide();
+        });
+    }, 3000);
     $('.itoososhi_' +  looser + '_player').hide();
     $('.itoososhi_damage').text(damage + '!');
 }
