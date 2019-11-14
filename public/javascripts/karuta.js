@@ -89,6 +89,7 @@ function initSocket() {
         isOtetsuki = false;
         $('.hand').remove();
         $('.batsu').remove();
+        $('.itoososhi_container').hide();
         hideInfoMessage();
         showYomifuda(currentAtariId);
     });
@@ -96,8 +97,10 @@ function initSocket() {
     // 誰かがあたり札を払った時
     socket.on('harai atari', function(resp) {
         var atariEl = $('.fuda#' + resp.atari);
+        var player = findUserById(resp.userId);
         showHandEffect(atariEl);
-        showInfoMessage(findUserById(resp.userId).name + 'さんが取りました', true);
+        showItoososhi(player, resp.damage);
+        showInfoMessage(player.name + 'さんが取りました', true);
         if(players[0].id === resp.userId) {
             atariEl.addClass('red_fuda');
         } else {
@@ -250,6 +253,16 @@ function showHandEffect(el) {
     var handImg = $('<img>').addClass('hand').attr('src', '/images/hand.png');
     el.append(handImg);
     handImg.animate({'width': '130%', 'opacity': 0.7}, 300);
+}
+
+function showItoososhi(p, damage) {
+    var is1P = players[0].id === p.id;
+    $('.itoososhi_container').show();
+    var winner = is1P ? 'red' : 'blue';
+    var looser = is1P ? 'blue' : 'red';
+    $('.itoososhi_' +  winner + '_player').show();
+    $('.itoososhi_' +  looser + '_player').hide();
+    $('.itoososhi_damage').text(damage + '!');
 }
 
 function showOtetsukiEffect(el) {

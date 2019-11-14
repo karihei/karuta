@@ -22,7 +22,13 @@ block content
         div#kaminoku
         div#shimonoku
     div#fuda_area
-
+    div.itoososhi_container
+      span.itoososhi_red_player(style="display:none;")
+        img(src="images/damage.png")
+        span.itoososhi_damage
+      span.itoososhi_blue_player(style="display:none;")
+        img(src="images/damage2p.png")
+        span.itoososhi_damage
     div#result_container
       div.result_winner="やうへい WINS!"
       div.result_detail

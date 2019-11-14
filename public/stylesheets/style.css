@@ -364,3 +364,40 @@ a {
   overflow: hidden;
 }
 
+.itoososhi_container {
+  position: absolute;
+  top: 540px;
+}
+
+.itoososhi_red_player {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.itoososhi_blue_player {
+  left: 230px;
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.itoososhi_damage {
+  position: absolute;
+  top: -130px;
+
+  font-family: 'Germania One', cursive;
+  font-size: 15em;
+  color: #f74747;
+  -webkit-text-stroke-width: 2px;
+  -webkit-text-stroke-color: #ffffff;
+  text-shadow: 0 0 42px #000;
+}
+
+.itoososhi_red_player .itoososhi_damage {
+  left: 330px;
+}
+
+.itoososhi_blue_player .itoososhi_damage {
+  left: 155px;
+}

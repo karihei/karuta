@@ -166,6 +166,7 @@ io.on('connection', function(socket) {
                 io.emit('knockout', {players: players, winner: player});
                 resultMode();
             }
+            resp.damage = damage;
             io.emit('harai atari', resp);
         } else { // お手つきをした
             io.emit('harai otetsuki', resp);
