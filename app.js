@@ -1,19 +1,21 @@
-var express = require('express');
-var app = express();
-var path = require('path');
-var logger = require('morgan');
-var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
-var http = require('http');
-var server = http.createServer(app);
-var io = require('socket.io').listen(server);
-var __ = require('underscore');
+const express = require('express');
+const sqlite3 = require('sqlite3').verbose();
+let db = new sqlite3.Database('karuta.db');
+const app = express();
+const path = require('path');
+const logger = require('morgan');
+const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
+const http = require('http');
+const server = http.createServer(app);
+const io = require('socket.io').listen(server);
+const __ = require('underscore');
 
-var debug = require('debug')('karuta:server');
-var index = require('./routes/index');
-var api   = require('./routes/api');
+const debug = require('debug')('karuta:server');
+const index = require('./routes/index');
+const api   = require('./routes/api');
 
-var isDebug = true; // デバッグ時はTRUE
+const isDebug = process.argv[2] ? true : false // デバッグ時はTRUE
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -88,6 +90,23 @@ io.on('connection', function(socket) {
         socket.emit('send pong', new Date().getTime() - pingData.ping);
         currentPlayersPings[pingData.userId] = pingData.ping
     });
+    
+    // ユーザ作成
+    socket.on('user create', function(name) {
+        db.get('SELECT id, name FROM user WHERE name = ?', [name], (err, rows) => {
+            if (err) {
+                return;
+            }
+            var id = -1;
+            if (rows) {
+                // ユーザが既に存在する
+            } else {
+                id = generateUserId();
+                db.run('INSERT INTO user (id, name) VALUES (?,?)', [id, name]);
+            }
+            socket.emit('user create finish', {id: id, name: name});
+        });
+    });
 
     // エントリー受付
     socket.on('name entry', function(name) {
@@ -117,7 +136,7 @@ io.on('connection', function(socket) {
         }
     });
 
-    socket.on('user exit', function(userId) {
+    socket.on('user exit', function() {
         if (mode === 'entry') {
             removePlayer(userId);
             emitNameEntry(players, ENTRY_TIME_LIMIT);
@@ -192,6 +211,12 @@ io.on('connection', function(socket) {
     });
 
 });
+
+// ユーザIDを発行
+function generateUserId() {
+    let id = new Date().getTime().toString();
+    return id;
+}
 
 // ダメージ計算
 function calcDamage(player, rival, speed) {

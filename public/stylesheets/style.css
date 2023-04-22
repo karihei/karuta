@@ -12,6 +12,20 @@ a {
   color: #00B7FF;
 }
 
+.background-area {
+  border-radius: 10px;
+  background-color: #ffffff42;
+  width: 92%;
+  position: absolute;
+  height: 96%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  -webkit-transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+  z-index: -1;
+}
+
 #msg_info {
   position: absolute;
   right: 5px;
@@ -113,6 +127,32 @@ a {
 .player_container {
   margin: 0 -20px;
   position: relative;
+}
+
+#container_player_data {
+  font-size: 3em;
+  margin-left: 65px;
+  color: #000;
+}
+
+.player_data_name {
+  
+}
+
+.player_data_rank {
+  margin-left:40px;
+}
+
+#container_start_menu {
+  margin: 50px;
+}
+
+#container_start_menu .btn {
+  width: 35%;
+  height: 110px;
+  font-size: 250%;
+  margin: 25px auto;
+  display: block;
 }
 
 .vs {

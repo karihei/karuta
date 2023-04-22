@@ -19,6 +19,7 @@ var JOKA = 'なにわづに さくやこのはな ふゆごもり いまをは�
 
 function onLoad() {
     initSocket();
+    initUserData();
     initViews();
     fetchGameInfo();
     startPing();
@@ -40,6 +41,14 @@ function startPing() {
 
 function initSocket() {
     socket = io();
+
+    socket.on('user create finish', function(resp){
+        if (resp.id) {
+            $.cookie('userName', resp.name);
+            $.cookie('playerId', resp.id);
+        }
+    });
+
     socket.on('name entry', function(resp) {
         var ps = resp.players;
         entryRemain = resp.remain;
@@ -154,8 +163,22 @@ function initSocket() {
     });
 }
 
+
+function initUserData() {
+    userName = $.cookie('userName');
+}
+
 function initViews() {
-    $('#name_submit').on('click', onNameSubmit);
+    if (!userName) {
+        $('#container_login').show();
+        $('#name_submit').on('click', onNameSubmit);
+    } else {
+        $('.title').css({'width': '30%'});
+        $('#container_player_data').show();
+        $('#container_start_menu').show();
+        $('.player_data_name').text(userName);
+        $('.player_data_rank').text('RANK1');
+    }
 
     waitingInterval = setInterval(function() {
         if (entryRemain > 0) {
@@ -227,10 +250,11 @@ function onNameSubmit(e) {
     e.preventDefault();
     var nameEl = $('#name_input');
     userName = nameEl.val();
-    $('.title').css({'width': '30%'});
+
     if (userName.length > 0) {
+        $('.title').css({'width': '30%'});
         $('#container_login').hide();
-        socket.emit('name entry', userName);
+        socket.emit('user create', userName);
     }
 }
 
