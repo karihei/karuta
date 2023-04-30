@@ -46,6 +46,7 @@ function initSocket() {
         if (resp.id) {
             $.cookie('userName', resp.name);
             $.cookie('playerId', resp.id);
+            location.reload();
         }
     });
 
@@ -161,6 +162,10 @@ function initSocket() {
     socket.on('update hp', function(ps) {
         updateHp(ps);
     });
+
+    socket.on('karutaerror', function(resp) {
+        alert(resp);
+    });
 }
 
 
@@ -173,10 +178,10 @@ function initViews() {
         $('#container_login').show();
         $('#name_submit').on('click', onNameSubmit);
     } else {
-        $('.title').css({'width': '30%'});
         $('#container_player_data').show();
         $('#container_start_menu').show();
         $('.player_data_name').text(userName);
+        $('#btn_delete_player').on('click', onClickDeletePlayer)
         $('.player_data_rank').text('RANK1');
     }
 
@@ -252,9 +257,19 @@ function onNameSubmit(e) {
     userName = nameEl.val();
 
     if (userName.length > 0) {
-        $('.title').css({'width': '30%'});
         $('#container_login').hide();
         socket.emit('user create', userName);
+    }
+}
+
+function onClickDeletePlayer(e) {
+    e.preventDefault();
+    let result = confirm('ユーザーデータを削除しますか？※元には戻せません');
+
+    if (result) {
+        $.removeCookie('userName');
+        $.removeCookie('userId');
+        location.reload();
     }
 }
 

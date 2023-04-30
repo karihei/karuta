@@ -131,8 +131,16 @@ a {
 
 #container_player_data {
   font-size: 3em;
-  margin-left: 65px;
   color: #000;
+  background: #edff999c;
+  border-radius: 20px;
+  padding: 20px 20px 20px 29px;
+  margin: 0 64px;
+  text-align: center;
+  position: absolute;
+  top: 20%;
+  right: 0;
+  left: 0;
 }
 
 .player_data_name {
@@ -153,6 +161,11 @@ a {
   font-size: 250%;
   margin: 25px auto;
   display: block;
+}
+
+#btn_delete_player {
+  font-size: 2em;
+  text-align: center;
 }
 
 .vs {

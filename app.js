@@ -14,6 +14,7 @@ const __ = require('underscore');
 const debug = require('debug')('karuta:server');
 const index = require('./routes/index');
 const api   = require('./routes/api');
+const util = require('./util.js');
 
 const isDebug = process.argv[2] ? true : false // デバッグ時はTRUE
 
@@ -93,8 +94,15 @@ io.on('connection', function(socket) {
     
     // ユーザ作成
     socket.on('user create', function(name) {
+        name = util.htmlspecialchars(name);
+        if (name.length > 6) {
+            karutaError(socket, "6文字以内でよろ");
+            return;
+        }
+
         db.get('SELECT id, name FROM user WHERE name = ?', [name], (err, rows) => {
             if (err) {
+                karutaError(socket, "DBエラー");
                 return;
             }
             var id = -1;
@@ -344,6 +352,10 @@ function reset() {
     lastEntryTime = 0;
     currentPlayersPings = {};
     entryTimeout && clearTimeout(entryTimeout);
+}
+
+function karutaError(socket, msg) {
+    socket.emit('karutaerror', msg);
 }
 
 setUpGame();
